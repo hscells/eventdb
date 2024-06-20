@@ -120,5 +120,18 @@ func (s *Server) Serve(addr string) error {
 
 	a.POST("/event", s.addEvent)
 	a.GET("/event", s.getLastEvent)
+	r.GET("/ping", func(c *gin.Context) {
+		err = s.store.AddEvent("ping", "server", []byte(`{"data":"ping"}`))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		ev, err2 := s.store.GetLastEvent("server", "ping")
+		if err2 != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err2.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, ev)
+	})
 	return r.Run(addr)
 }

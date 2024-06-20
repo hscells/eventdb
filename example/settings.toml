@@ -1,4 +1,4 @@
-auth_file = "auth.toml" # See auth.toml in this directory for an example.
+auth_file = "example/auth.toml" # See auth.toml in this directory for an example.
 events_file = "events.db" # This is the SQLite database that stores events.
 
 [server]
