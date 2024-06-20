@@ -1,0 +1,5 @@
+[authentication]
+"user" = "password"
+
+[authorization]
+"2027497" = "user"

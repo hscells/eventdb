@@ -1,0 +1,7 @@
+auth_file = "auth.toml" # See auth.toml in this directory for an example.
+events_file = "events.db" # This is the SQLite database that stores events.
+
+[server]
+host = "localhost:8080" # The host and port for the server.
+allowed_origins = ["http://localhost:8081"] # For CORS. Enter the URL of your frontend here.
+log_file = "server.log" # The log file for the server.
