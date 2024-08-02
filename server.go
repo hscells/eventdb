@@ -60,6 +60,16 @@ func (s *Server) getLastEvent(c *gin.Context) {
 	c.JSON(http.StatusOK, event)
 }
 
+func (s *Server) isAuthenticated(c *gin.Context) {
+	a := c.GetHeader("Authorization")
+	source := getUserFromAuthorizationHeader(a)
+	if source == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing source parameter"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"error": nil})
+}
+
 // addEvent adds a new event to the store.
 func (s *Server) addEvent(c *gin.Context) {
 	var event map[string]interface{}
@@ -120,8 +130,9 @@ func (s *Server) Serve(addr string) error {
 
 	a.POST("/event", s.addEvent)
 	a.GET("/event", s.getLastEvent)
+	a.GET("/auth", s.isAuthenticated)
 	r.GET("/ping", func(c *gin.Context) {
-		err = s.store.AddEvent("ping", "server", []byte(`{"data":"ping"}`))
+		err = s.store.AddEvent("ping", "server", []byte(`{"data":"pong", "last_ping":"`+time.Now().Format(time.RFC3339)+`"}`))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
