@@ -122,11 +122,12 @@ func (s *Server) Serve(addr string) error {
 	a := r.Group("/", gin.BasicAuth(s.authorizer.authentication))
 
 	// Logging to a file.
-	f, err := os.Create(s.logPath)
+	f, err := os.OpenFile(s.logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
 	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
+	r.Use(gin.LoggerWithWriter(gin.DefaultWriter))
 
 	a.POST("/event", s.addEvent)
 	a.GET("/event", s.getLastEvent)
