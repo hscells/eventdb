@@ -9,6 +9,4 @@ COPY *.go ./
 COPY cmd/eventdb/eventdb-server.go ./cmd/eventdb/eventdb-server.go
 RUN go build -v -o /usr/bin/eventdb-server ./cmd/eventdb/eventdb-server.go
 
-COPY auth.toml settings.toml ./
-
 CMD ["eventdb-server", "settings.toml"]
