@@ -128,6 +128,7 @@ func (s *Server) Serve(addr string) error {
 	}
 	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 	r.Use(gin.LoggerWithWriter(gin.DefaultWriter))
+	a.Use(gin.LoggerWithWriter(gin.DefaultWriter))
 
 	a.POST("/event", s.addEvent)
 	a.GET("/event", s.getLastEvent)
