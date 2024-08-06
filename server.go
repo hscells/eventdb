@@ -5,12 +5,16 @@ import (
 	"encoding/json"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	sloggin "github.com/samber/slog-gin"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 )
+
+var logger *slog.Logger
 
 // Server is an HTTP server that provides an API for adding and querying events.
 type Server struct {
@@ -58,6 +62,7 @@ func (s *Server) getLastEvent(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, event)
+	logger.Log(c, slog.LevelInfo, "Event requested", "source", source, "eventid", eventid)
 }
 
 func (s *Server) isAuthenticated(c *gin.Context) {
@@ -103,13 +108,14 @@ func (s *Server) addEvent(c *gin.Context) {
 		}
 		d.Status(http.StatusCreated)
 	}()
+	logger.Log(c, slog.LevelInfo, "Event added", "source", source, "eventid", eventId, "data", string(eventData))
 }
 
 // Serve starts the server on the given address.
 func (s *Server) Serve(addr string) error {
 	gin.DisableConsoleColor()
-	r := gin.Default()
-
+	r := gin.New()
+	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     s.allowedOrigins,
 		AllowMethods:     []string{"GET", "POST"},
@@ -119,16 +125,24 @@ func (s *Server) Serve(addr string) error {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	a := r.Group("/", gin.BasicAuth(s.authorizer.authentication))
-
 	// Logging to a file.
 	f, err := os.OpenFile(s.logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
-	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
-	r.Use(gin.LoggerWithWriter(gin.DefaultWriter))
-	a.Use(gin.LoggerWithWriter(gin.DefaultWriter))
+	m := io.MultiWriter(f, os.Stdout)
+
+	logger = slog.New(slog.NewTextHandler(m, nil)).
+		With("server_start_time", time.Now())
+	r.Use(sloggin.New(logger))
+
+	a := r.Group("/", gin.BasicAuth(s.authorizer.authentication))
+
+	gin.DefaultWriter = m
+	gin.DefaultErrorWriter = m
+	//r.Use(gin.LoggerWithWriter(gin.DefaultWriter))
+	//a.Use(gin.LoggerWithWriter(gin.DefaultWriter))
+	//a.Use(sloggin.New(logger))
 
 	a.POST("/event", s.addEvent)
 	a.GET("/event", s.getLastEvent)
