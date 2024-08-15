@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/hscells/bigbro"
 	sloggin "github.com/samber/slog-gin"
 	"io"
 	"log/slog"
@@ -145,9 +146,15 @@ func (s *Server) Serve(addr string) error {
 	//a.Use(gin.LoggerWithWriter(gin.DefaultWriter))
 	//a.Use(sloggin.New(logger))
 
+	bblogger, err := bigbro.NewCSVLogger("bigbro.csv")
+	if err != nil {
+		panic(err)
+	}
+
 	a.POST("/event", s.addEvent)
 	a.GET("/event", s.getLastEvent)
 	a.GET("/auth", s.isAuthenticated)
+	r.GET("/bb", bblogger.GinEndpoint)
 	r.GET("/ping", func(c *gin.Context) {
 		err = s.store.AddEvent("ping", "server", []byte(`{"data":"pong", "last_ping":"`+time.Now().Format(time.RFC3339)+`"}`))
 		if err != nil {
