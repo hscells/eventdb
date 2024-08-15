@@ -8,7 +8,6 @@ import (
 // Authorizer is a simple authorizer that checks if a user is allowed to access a source.
 type Authorizer struct {
 	authentication map[string]string
-	authorization  map[string]string
 }
 
 // OpenAuthorizer opens a new authorizer at the given path.
@@ -34,13 +33,5 @@ func OpenAuthorizer(path string) (*Authorizer, error) {
 		return nil, err
 	}
 
-	return &Authorizer{authorization: a.Authorization, authentication: a.Authentication}, nil
-}
-
-// IsAllowed returns true if the user is allowed to access the source.
-func (a *Authorizer) IsAllowed(user, source string) bool {
-	if u, ok := a.authorization[source]; ok {
-		return u == user
-	}
-	return false
+	return &Authorizer{authentication: a.Authentication}, nil
 }

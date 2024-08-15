@@ -121,6 +121,7 @@ func (s *Server) Serve(addr string) error {
 		AllowMethods:     []string{"GET", "POST"},
 		AllowHeaders:     []string{"Authorization", "Event", "Content-Type", "Origin"},
 		ExposeHeaders:    []string{"Content-Length", "Authorization", "Event"},
+		AllowWildcard:    true,
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
