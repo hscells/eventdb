@@ -142,9 +142,6 @@ func (s *Server) Serve(addr string) error {
 
 	gin.DefaultWriter = m
 	gin.DefaultErrorWriter = m
-	//r.Use(gin.LoggerWithWriter(gin.DefaultWriter))
-	//a.Use(gin.LoggerWithWriter(gin.DefaultWriter))
-	//a.Use(sloggin.New(logger))
 
 	bblogger, err := bigbro.NewCSVLogger("bigbro.csv")
 	if err != nil {
